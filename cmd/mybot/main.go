@@ -21,7 +21,7 @@ func GetAll(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERR: ", err)
 		return
 	}
-	log.Println(body)
+	log.Println(string(body))
 }
 
 func main() {
