@@ -4,13 +4,12 @@ import (
 	"log"
 	"mybot/pkg/handler"
 	"mybot/pkg/mybot"
-	"os"
 	"time"
 )
 
 var (
 	PericBotToken = "1887809470:AAGvUYu2u-H1DQd16Si0Dpag3-sME_2HjwY"
-	WebHookURL    = "0.0.0.0"
+	WebHookURL    = "https://peric-telegram-bot.herokuapp.com"
 )
 
 func main() {
@@ -18,7 +17,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = handler.NewBotHandler(bot, WebHookURL+":"+os.Getenv("PORT"))
+	_, err = handler.NewBotHandler(bot, WebHookURL)
 	if err != nil {
 		log.Fatal(err)
 	}
