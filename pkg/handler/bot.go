@@ -20,13 +20,15 @@ func NewBotHandler(bot *tgbotapi.BotAPI, WebHookURL string) (*BotHandler, error)
 	return &bh, nil
 }
 
-func (b *BotHandler) GetAll(c *gin.Context) {
+func (bh *BotHandler) GetAll(c *gin.Context) {
 	u := tgbotapi.Update{}
 	err := c.BindJSON(&u)
 	if err != nil {
 		log.Println("ERR: ", err)
 		return
 	}
+	msg := tgbotapi.NewMessage(u.Message.Chat.ID, u.Message.Text)
+	msg.ReplyToMessageID = u.Message.MessageID
+	bh.Bot.Send(msg)
 	log.Println("GETALL WORKING with bindJSON")
-	log.Printf("%#v\n", u)
 }
