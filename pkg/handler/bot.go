@@ -22,4 +22,10 @@ func NewBotHandler(bot *tgbotapi.BotAPI, WebHookURL string) (*BotHandler, error)
 
 func (b *BotHandler) GetAll(c *gin.Context) {
 	log.Println("GETALL WORKING")
+	body, err := c.GetRawData()
+	if err != nil {
+		log.Println("ERR: ", err)
+		return
+	}
+	log.Println(string(body))
 }

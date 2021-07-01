@@ -1,12 +1,11 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"mybot/pkg/handler"
 	"mybot/pkg/mybot"
-	"net/http"
-	"os"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -14,25 +13,16 @@ var (
 	WebHookURL    = "https://peric-telegram-bot.herokuapp.com"
 )
 
-func GetAll(w http.ResponseWriter, r *http.Request) {
-	log.Println("In: GETALL")
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Println("ERR: ", err)
-		return
-	}
-	log.Println(string(body))
-}
-
 func main() {
 	bot, err := mybot.NewBot(PericBotToken)
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = handler.NewBotHandler(bot, WebHookURL)
+	botHandler, err := handler.NewBotHandler(bot, WebHookURL)
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.HandleFunc("/", GetAll)
-	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
+	r := gin.Default()
+	r.POST("/", botHandler.GetAll)
+	r.Run()
 }
