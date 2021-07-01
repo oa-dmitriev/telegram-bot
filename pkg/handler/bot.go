@@ -21,11 +21,12 @@ func NewBotHandler(bot *tgbotapi.BotAPI, WebHookURL string) (*BotHandler, error)
 }
 
 func (b *BotHandler) GetAll(c *gin.Context) {
-	log.Println("GETALL WORKING")
-	body, err := c.GetRawData()
+	u := tgbotapi.Update{}
+	err := c.BindJSON(&u)
 	if err != nil {
 		log.Println("ERR: ", err)
 		return
 	}
-	log.Println(string(body))
+	log.Println("GETALL WORKING with bindJSON")
+	log.Printf("%#v\n", u)
 }
