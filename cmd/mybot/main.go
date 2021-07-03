@@ -2,8 +2,8 @@ package main
 
 import (
 	"log"
+	"mybot/pkg/bot"
 	"mybot/pkg/handler"
-	"mybot/pkg/mybot"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,15 +14,15 @@ var (
 )
 
 func main() {
-	bot, err := mybot.NewBot(PericBotToken)
+	b, err := bot.NewBot(PericBotToken)
 	if err != nil {
 		log.Fatal(err)
 	}
-	botHandler, err := handler.NewBotHandler(bot, WebHookURL)
+	botHandler, err := handler.NewBotHandler(b, WebHookURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 	r := gin.Default()
-	r.POST("/", botHandler.GetAll)
+	r.POST("/", botHandler.GetMessage)
 	r.Run()
 }
