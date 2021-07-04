@@ -2,39 +2,33 @@ package handler
 
 import (
 	"log"
+	"mybot/pkg/bot"
 
 	"github.com/gin-gonic/gin"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type BotHandler struct {
-	Bot *tgbotapi.BotAPI
+	BotRepo *bot.BotRepo
 }
 
-func NewBotHandler(bot *tgbotapi.BotAPI, WebHookURL string) (*BotHandler, error) {
-	bh := BotHandler{bot}
-	_, err := bh.Bot.SetWebhook(tgbotapi.NewWebhook(WebHookURL))
-	if err != nil {
-		return nil, err
-	}
-	return &bh, nil
-}
-
-func (bh *BotHandler) GetMessage(c *gin.Context) {
+func (h *BotHandler) GetMessage(c *gin.Context) {
 	body, err := c.GetRawData()
 	if err != nil {
 		log.Println("ERR: ", err)
 		return
 	}
 	log.Println("BODY GUYS: ", string(body))
-	// u := tgbotapi.Update{}
-	// err := c.BindJSON(&u)
-	// if err != nil {
-	// 	log.Println("ERR: ", err)
-	// 	return
-	// }
-	// msg := tgbotapi.NewMessage(u.Message.Chat.ID, u.Message.Text)
-	// msg.ReplyToMessageID = u.Message.MessageID
-	// bh.Bot.Send(msg)
-	// log.Println("GETALL WORKING with bindJSON")
+
+	u := tgbotapi.Update{}
+	err = c.BindJSON(&u)
+	if err != nil {
+		log.Println("ERR: ", err)
+		return
+	}
+
+	if u.Message != nil {
+		h.BotRepo.Message(u.Message)
+		return
+	}
 }

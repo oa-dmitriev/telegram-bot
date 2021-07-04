@@ -14,15 +14,17 @@ var (
 )
 
 func main() {
-	b, err := bot.NewBot(PericBotToken)
+	botRepo, err := bot.NewBotRepo(PericBotToken, WebHookURL)
 	if err != nil {
 		log.Fatal(err)
 	}
-	botHandler, err := handler.NewBotHandler(b, WebHookURL)
+	handler := handler.BotHandler{
+		BotRepo: botRepo,
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
 	r := gin.Default()
-	r.POST("/", botHandler.GetMessage)
+	r.POST("/", handler.GetMessage)
 	r.Run()
 }
