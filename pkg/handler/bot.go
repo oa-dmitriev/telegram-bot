@@ -13,15 +13,9 @@ type BotHandler struct {
 }
 
 func (h *BotHandler) GetMessage(c *gin.Context) {
-	body, err := c.GetRawData()
-	if err != nil {
-		log.Println("ERR: ", err)
-		return
-	}
-	log.Println("BODY GUYS: ", string(body))
-
 	u := tgbotapi.Update{}
-	err = c.BindJSON(&u)
+	err := c.BindJSON(&u)
+	log.Printf("%#v\n", u)
 	if err != nil {
 		log.Println("ERR: ", err)
 		return
