@@ -41,18 +41,18 @@ func isDataLeft(data []string, offset int) bool {
 }
 
 func (repo *BotRepo) FetchData(term string) ([]string, error) {
-	if repo.RedCon != nil {
-		statusCmd := repo.RedCon.Get(term)
-		if statusCmd.Err() != nil {
-			ans := []string{}
-			err := json.Unmarshal([]byte(statusCmd.Val()), &ans)
-			if err != nil {
-				return nil, err
-			}
-			log.Printf("\nREDIS FOUND\n%#v\n\n", ans)
-			return ans, nil
-		}
-	}
+	// if repo.RedCon != nil {
+	// 	statusCmd := repo.RedCon.Get(term)
+	// 	if statusCmd.Err() != nil {
+	// 		ans := []string{}
+	// 		err := json.Unmarshal([]byte(statusCmd.Val()), &ans)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		log.Printf("\nREDIS FOUND\n%#v\n\n", ans)
+	// 		return ans, nil
+	// 	}
+	// }
 
 	u := apiURL
 	p := url.Values{
