@@ -2,13 +2,10 @@ package bot
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
-
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 var (
@@ -29,39 +26,13 @@ type Data struct {
 	Definitions []*DefinitionData `json:"list"`
 }
 
-var cmds = map[string]func(*BotRepo, *tgbotapi.Message, []string) error{
-	"/def": func(repo *BotRepo, msgInfo *tgbotapi.Message, args []string) error {
-		data, err := FetchData(strings.Join(args, " "))
-		if err != nil {
-			return fmt.Errorf("server error: %#v\n", err)
-		}
-		if len(data) == 0 {
-			msg := tgbotapi.NewMessage(msgInfo.Chat.ID, "No definition found")
-			msg.ReplyToMessageID = msgInfo.MessageID
-			repo.Bot.Send(msg)
-			return nil
-		}
-		dataToSend := GetPage(data, 0)
-		msg := tgbotapi.NewMessage(
-			msgInfo.Chat.ID,
-			"•  "+strings.Join(dataToSend, "\n•  "),
-		)
-		if isDataLeft(data, 0) {
-			msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-				tgbotapi.NewInlineKeyboardRow(
-					tgbotapi.NewInlineKeyboardButtonData("Next", "1"),
-				),
-			)
-		}
-		msg.ReplyToMessageID = msgInfo.MessageID
-		repo.Bot.Send(msg)
-		return nil
-	},
-	"/add": func(repo *BotRepo, msg *tgbotapi.Message, args []string) error {
-
-		return nil
-	},
-}
+var (
+	cmds = map[string]func([]string) ([]string, error){
+		"/def": func(args []string) ([]string, error) {
+			return FetchData(strings.Join(args, " "))
+		},
+	}
+)
 
 func isDataLeft(data []string, offset int) bool {
 	return len(data) > offset+PAGELEN

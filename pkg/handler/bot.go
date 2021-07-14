@@ -25,4 +25,8 @@ func (h *BotHandler) GetMessage(c *gin.Context) {
 		h.BotRepo.Message(u.Message)
 		return
 	}
+	if u.CallbackQuery != nil {
+		h.BotRepo.CallBackQuery(u.CallbackQuery)
+		return
+	}
 }
