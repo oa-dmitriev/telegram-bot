@@ -2,8 +2,8 @@ package bot
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -11,11 +11,14 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var dataUrl = "https://wordsapiv1.p.mashape.com/words"
-
-type BotRepo struct {
-	Bot *tgbotapi.BotAPI
-}
+var (
+	apiURL = url.URL{
+		Scheme: "https",
+		Host:   "api.urbandictionary.com",
+		Path:   "v0/define",
+	}
+	PAGELEN = 3
+)
 
 type DefinitionData struct {
 	Word       string `json:"word"`
@@ -28,36 +31,26 @@ type Data struct {
 
 var cmds = map[string]func(*BotRepo, *tgbotapi.Message, []string) error{
 	"/def": func(repo *BotRepo, msgInfo *tgbotapi.Message, args []string) error {
-		log.Println("/def: ", args)
-		p := url.Values{
-			"term": []string{strings.Join(args, " ")},
-		}
-		u := url.URL{
-			Scheme:   "https",
-			Host:     "api.urbandictionary.com",
-			Path:     "v0/define",
-			RawQuery: p.Encode(),
-		}
-		resp, err := http.Get(u.String())
+		data, err := GetPage(strings.Join(args, " "), 0)
 		if err != nil {
-			return err
+			return fmt.Errorf("server error: %#v\n", err)
 		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
+		if len(data) == 0 {
+			msg := tgbotapi.NewMessage(msgInfo.Chat.ID, "No definition found")
+			msg.ReplyToMessageID = msgInfo.MessageID
+			repo.Bot.Send(msg)
+			return nil
 		}
-		data := Data{}
-		err = json.Unmarshal(body, &data)
-		if err != nil {
-			return err
-		}
-		for _, v := range data.Definitions {
-			log.Println(v.Definition)
-		}
-
-		msg := tgbotapi.NewMessage(msgInfo.Chat.ID, data.Definitions[0].Definition)
+		dataToSend := "• " + strings.Join(data, "\n •")
+		msg := tgbotapi.NewMessage(msgInfo.Chat.ID, dataToSend)
 		msg.ReplyToMessageID = msgInfo.MessageID
+		if isDataLeft(data, 0) {
+			msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
+				tgbotapi.NewInlineKeyboardRow(
+					tgbotapi.NewInlineKeyboardButtonData("Next", "1"),
+				),
+			)
+		}
 		repo.Bot.Send(msg)
 		return nil
 	},
@@ -65,4 +58,42 @@ var cmds = map[string]func(*BotRepo, *tgbotapi.Message, []string) error{
 
 		return nil
 	},
+}
+
+func isDataLeft(data []string, offset int) bool {
+	return len(data) > offset+PAGELEN
+}
+
+func GetPage(term string, offset int) ([]string, error) {
+	u := apiURL
+	p := url.Values{
+		"term": []string{term},
+	}
+	u.RawQuery = p.Encode()
+
+	resp, err := http.Get(u.String())
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	data := Data{}
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	ans := make([]string, len(data.Definitions))
+	for i := range data.Definitions {
+		ans[i] = data.Definitions[i].Definition
+	}
+	start := offset * PAGELEN
+	end := offset*PAGELEN + PAGELEN
+	if len(ans) < end {
+		end = len(ans)
+	}
+	return ans[start:end], nil
 }

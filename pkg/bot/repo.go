@@ -7,6 +7,10 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+type BotRepo struct {
+	Bot *tgbotapi.BotAPI
+}
+
 func NewBotRepo(token string, webHookUrl string) (*BotRepo, error) {
 	b, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
@@ -16,7 +20,7 @@ func NewBotRepo(token string, webHookUrl string) (*BotRepo, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &BotRepo{b}, nil
+	return &BotRepo{Bot: b}, nil
 }
 
 func (repo *BotRepo) Edit(msg *tgbotapi.Message) {
