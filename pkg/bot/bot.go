@@ -31,7 +31,7 @@ type Data struct {
 
 var cmds = map[string]func(*BotRepo, *tgbotapi.Message, []string) error{
 	"/def": func(repo *BotRepo, msgInfo *tgbotapi.Message, args []string) error {
-		data, err := GetPage(strings.Join(args, " "), 0)
+		data, err := FetchData(strings.Join(args, " "))
 		if err != nil {
 			return fmt.Errorf("server error: %#v\n", err)
 		}
@@ -41,9 +41,11 @@ var cmds = map[string]func(*BotRepo, *tgbotapi.Message, []string) error{
 			repo.Bot.Send(msg)
 			return nil
 		}
-		dataToSend := "• " + strings.Join(data, "\n •")
-		msg := tgbotapi.NewMessage(msgInfo.Chat.ID, dataToSend)
-		msg.ReplyToMessageID = msgInfo.MessageID
+		dataToSend := GetPage(data, 0)
+		msg := tgbotapi.NewMessage(
+			msgInfo.Chat.ID,
+			"•  "+strings.Join(dataToSend, "\n•  "),
+		)
 		if isDataLeft(data, 0) {
 			msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 				tgbotapi.NewInlineKeyboardRow(
@@ -51,6 +53,7 @@ var cmds = map[string]func(*BotRepo, *tgbotapi.Message, []string) error{
 				),
 			)
 		}
+		msg.ReplyToMessageID = msgInfo.MessageID
 		repo.Bot.Send(msg)
 		return nil
 	},
@@ -64,7 +67,7 @@ func isDataLeft(data []string, offset int) bool {
 	return len(data) > offset+PAGELEN
 }
 
-func GetPage(term string, offset int) ([]string, error) {
+func FetchData(term string) ([]string, error) {
 	u := apiURL
 	p := url.Values{
 		"term": []string{term},
@@ -90,10 +93,14 @@ func GetPage(term string, offset int) ([]string, error) {
 	for i := range data.Definitions {
 		ans[i] = data.Definitions[i].Definition
 	}
+	return ans, nil
+}
+
+func GetPage(data []string, offset int) []string {
 	start := offset * PAGELEN
 	end := offset*PAGELEN + PAGELEN
-	if len(ans) < end {
-		end = len(ans)
+	if len(data) < end {
+		end = len(data)
 	}
-	return ans[start:end], nil
+	return data[start:end]
 }
