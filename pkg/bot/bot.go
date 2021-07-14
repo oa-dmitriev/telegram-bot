@@ -42,6 +42,7 @@ func isDataLeft(data []string, offset int) bool {
 
 func (repo *BotRepo) FetchData(term string) ([]string, error) {
 	if repo.RedCon != nil {
+		log.Println("\n\nTRYING TO READ FROM RED\n")
 		statusCmd := repo.RedCon.Get(term)
 		if statusCmd.Err() != nil {
 			ans := []string{}
