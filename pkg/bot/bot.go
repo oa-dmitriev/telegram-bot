@@ -44,7 +44,7 @@ func (repo *BotRepo) FetchData(term string) ([]string, error) {
 	if repo.RedCon != nil {
 		log.Println("\n\nTRYING TO READ FROM RED\n")
 		statusCmd := repo.RedCon.Get(term)
-		if statusCmd.Err() != nil {
+		if statusCmd.Err() == nil {
 			ans := []string{}
 			err := json.Unmarshal([]byte(statusCmd.Val()), &ans)
 			if err != nil {
