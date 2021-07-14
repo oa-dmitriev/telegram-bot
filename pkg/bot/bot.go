@@ -3,9 +3,11 @@ package bot
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 var (
@@ -27,9 +29,9 @@ type Data struct {
 }
 
 var (
-	cmds = map[string]func([]string) ([]string, error){
-		"/def": func(args []string) ([]string, error) {
-			return FetchData(strings.Join(args, " "))
+	cmds = map[string]func(*BotRepo, []string) ([]string, error){
+		"/def": func(repo *BotRepo, args []string) ([]string, error) {
+			return repo.FetchData(strings.Join(args, " "))
 		},
 	}
 )
@@ -38,7 +40,20 @@ func isDataLeft(data []string, offset int) bool {
 	return len(data) > offset*PAGELEN+PAGELEN
 }
 
-func FetchData(term string) ([]string, error) {
+func (repo *BotRepo) FetchData(term string) ([]string, error) {
+	if repo.RedCon != nil {
+		statusCmd := repo.RedCon.Get(term)
+		if statusCmd.Err() != nil {
+			ans := []string{}
+			err := json.Unmarshal([]byte(statusCmd.Val()), &ans)
+			if err != nil {
+				return nil, err
+			}
+			log.Printf("\nREDIS FOUND\n%#v\n\n", ans)
+			return ans, nil
+		}
+	}
+
 	u := apiURL
 	p := url.Values{
 		"term": []string{term},
@@ -63,6 +78,14 @@ func FetchData(term string) ([]string, error) {
 	ans := make([]string, len(data.Definitions))
 	for i := range data.Definitions {
 		ans[i] = data.Definitions[i].Definition
+	}
+
+	if repo.RedCon != nil {
+		b, err := json.Marshal(ans)
+		if err == nil {
+			log.Printf("\nREDIS WRITTEN\n%#v\n\n", ans)
+			repo.RedCon.Set(term, string(b), time.Hour*24)
+		}
 	}
 	return ans, nil
 }

@@ -2,14 +2,30 @@ package bot
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
+	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type BotRepo struct {
-	Bot *tgbotapi.BotAPI
+	Bot    *tgbotapi.BotAPI
+	RedCon *redis.Client
+}
+
+func InitRedis() (*redis.Client, error) {
+	opt, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+	if err != nil {
+		return nil, err
+	}
+	conn := redis.NewClient(opt)
+	status := conn.Ping()
+	if status.Err() != nil {
+		return nil, status.Err()
+	}
+	return conn, nil
 }
 
 func NewBotRepo(token string, webHookUrl string) (*BotRepo, error) {
@@ -21,14 +37,8 @@ func NewBotRepo(token string, webHookUrl string) (*BotRepo, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &BotRepo{Bot: b}, nil
-}
-
-func (repo *BotRepo) Edit(msg *tgbotapi.Message) {
-	// msg := tgbotapi.NewMessage(u.Message.Chat.ID, u.Message.Text)
-	// msg.ReplyToMessageID = u.Message.MessageID
-	// bh.Bot.Send(msg)
-	// log.Println("GETALL WORKING with bindJSON")
+	conn, _ := InitRedis()
+	return &BotRepo{Bot: b, RedCon: conn}, nil
 }
 
 func (repo *BotRepo) Message(msg *tgbotapi.Message) error {
@@ -40,7 +50,7 @@ func (repo *BotRepo) Message(msg *tgbotapi.Message) error {
 	if !ok {
 		return fmt.Errorf("no valid command")
 	}
-	data, err := cmd(tokens[1:])
+	data, err := cmd(repo, tokens[1:])
 	if err != nil {
 		return fmt.Errorf("server error")
 	}
@@ -81,7 +91,7 @@ func (repo *BotRepo) CallBackQuery(cb *tgbotapi.CallbackQuery) error {
 	if !ok {
 		return fmt.Errorf("no valid command")
 	}
-	data, err := cmd(tokens[1:])
+	data, err := cmd(repo, tokens[1:])
 	if err != nil {
 		return fmt.Errorf("server error")
 	}
