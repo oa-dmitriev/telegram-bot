@@ -85,8 +85,12 @@ func (repo *BotRepo) FetchData(term string) ([]string, error) {
 	if repo.RedCon != nil {
 		b, err := json.Marshal(ans)
 		if err == nil {
-			log.Printf("\nREDIS WRITTEN\n%#v\n\n", ans)
-			repo.RedCon.Set(term, string(b), time.Hour*24)
+			statusCmd := repo.RedCon.Set(term, string(b), time.Hour*24)
+			if statusCmd.Err() != nil {
+				log.Printf("\nREDIS WRITTEN\n%#v\n\n", ans)
+			} else {
+				log.Printf("\nREDIS WRITTEN ERROR\n%s\n\n", statusCmd.Err().Error())
+			}
 		}
 	}
 	return ans, nil
