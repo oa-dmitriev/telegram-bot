@@ -85,16 +85,24 @@ func (repo *BotRepo) CallBackQuery(cb *tgbotapi.CallbackQuery) error {
 	if err != nil {
 		return fmt.Errorf("server error")
 	}
+
 	dataToSend := GetPage(data, num)
 	newMsg := tgbotapi.NewEditMessageText(
 		msg.Chat.ID,
 		msg.MessageID,
 		"•  "+strings.Join(dataToSend, "\n•  "),
 	)
-	if isDataLeft(data, num) {
+	if num == 0 {
 		markup := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Prev", strconv.Itoa(num)),
+				tgbotapi.NewInlineKeyboardButtonData("Next", strconv.Itoa(num+1)),
+			),
+		)
+		newMsg.ReplyMarkup = &markup
+	} else if isDataLeft(data, num) {
+		markup := tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("Prev", strconv.Itoa(num-1)),
 				tgbotapi.NewInlineKeyboardButtonData("Next", strconv.Itoa(num+1)),
 			),
 		)
@@ -102,7 +110,7 @@ func (repo *BotRepo) CallBackQuery(cb *tgbotapi.CallbackQuery) error {
 	} else {
 		markup := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Prev", strconv.Itoa(num)),
+				tgbotapi.NewInlineKeyboardButtonData("Prev", strconv.Itoa(num-1)),
 			),
 		)
 		newMsg.ReplyMarkup = &markup

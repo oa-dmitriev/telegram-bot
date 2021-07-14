@@ -35,7 +35,7 @@ var (
 )
 
 func isDataLeft(data []string, offset int) bool {
-	return len(data) > offset+PAGELEN
+	return len(data) > offset*PAGELEN+PAGELEN
 }
 
 func FetchData(term string) ([]string, error) {
@@ -69,6 +69,9 @@ func FetchData(term string) ([]string, error) {
 
 func GetPage(data []string, offset int) []string {
 	start := offset * PAGELEN
+	if start > len(data) {
+		return nil
+	}
 	end := offset*PAGELEN + PAGELEN
 	if len(data) < end {
 		end = len(data)
