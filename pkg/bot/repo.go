@@ -135,8 +135,8 @@ func (repo *BotRepo) CallBackQuery(cb *tgbotapi.CallbackQuery) error {
 		_, err = repo.db.Exec(`
 			INSERT INTO vocabulary (user_id, word) 
 			VALUES ($1, $2)
-		`, cb.From.ID, term, " ")
-		if err != nil {
+		`, cb.From.ID, term)
+		if err == nil {
 			newMsg := tgbotapi.NewEditMessageText(
 				msg.Chat.ID,
 				msg.MessageID,
