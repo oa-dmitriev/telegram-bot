@@ -44,7 +44,7 @@ func InitDB() (*sql.DB, error) {
 	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS vocabulary(
 			user_id bigint NOT NULL,
-			word text NOT NULL,
+			word text NOT NULL
 		)
 	`)
 	if err != nil {
