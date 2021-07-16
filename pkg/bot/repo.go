@@ -173,11 +173,12 @@ func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 		for i := range dataToSend {
 			txt += fmt.Sprintf("\n*%s* - %s", dataToSend[i].Word, dataToSend[i].Definition)
 		}
-		newMsg := tgbotapi.NewEditMessageText(
+		log.Println("\n\n\nTEXT: ", txt)
+		newMsg := tgbotapi.NewMessage(
 			msg.Chat.ID,
-			msg.MessageID,
 			txt,
 		)
+		newMsg.ReplyToMessageID = msg.MessageID
 		newMsg.ReplyMarkup = CreateMarkup(0, isDefLeft(0, data), false)
 		return newMsg, nil
 	}
