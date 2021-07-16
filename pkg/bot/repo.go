@@ -92,15 +92,16 @@ func (r *BotRepo) Save(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
 	msg := cb.Message
 	term := cb.Message.ReplyToMessage.Text
 	sqlQuery := `
-			SELECT user_id, word 
+			SELECT word 
 			FROM vocabulary WHERE user_id = $1 AND word = $2
 		`
-	_, err := r.db.Query(sqlQuery, cb.From.ID, term)
-	if err != nil {
+	row := r.db.QueryRow(sqlQuery, cb.From.ID, term)
+	var s string
+	if err := row.Scan(&s); err == nil {
 		log.Println("\n\nALREADY IN DB\n")
 		return nil, err
 	}
-	_, err = r.db.Exec(`
+	_, err := r.db.Exec(`
 			INSERT INTO vocabulary (user_id, word) 
 			VALUES ($1, $2)
 		`, cb.From.ID, term)
@@ -120,7 +121,7 @@ func (r *BotRepo) Save(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
 func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 	if msg.Command() == "vocab" {
 		rows, err := r.db.Query(
-			"SELECT user_id, word FROM vocabulary WHERE user_id = $1",
+			"SELECT word FROM vocabulary WHERE user_id = $1",
 			msg.From.ID,
 		)
 		if err != nil {
