@@ -4,53 +4,19 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 
+	storage "mybot/internal/pkg/storage"
+
 	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	_ "github.com/lib/pq"
 )
 
 type BotRepo struct {
-	Bot    *tgbotapi.BotAPI
-	RedCon *redis.Client
-	db     *sql.DB
-}
-
-func InitRedis() (*redis.Client, error) {
-	opt, err := redis.ParseURL(os.Getenv("REDIS_URL"))
-	if err != nil {
-		return nil, err
-	}
-	conn := redis.NewClient(opt)
-	status := conn.Ping()
-	if status.Err() != nil {
-		return nil, status.Err()
-	}
-	return conn, nil
-}
-
-func InitDB() (*sql.DB, error) {
-	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
-	if err != nil {
-		return nil, err
-	}
-	err = db.Ping()
-	if err != nil {
-		return nil, err
-	}
-	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS vocabulary(
-			user_id bigint NOT NULL,
-			word text NOT NULL
-		)
-	`)
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+	Bot       *tgbotapi.BotAPI
+	redClient *redis.Client
+	db        *sql.DB
 }
 
 func NewBotRepo(token string, webHookUrl string) (*BotRepo, error) {
@@ -62,103 +28,54 @@ func NewBotRepo(token string, webHookUrl string) (*BotRepo, error) {
 	if err != nil {
 		return nil, err
 	}
-	conn, _ := InitRedis()
-	db, err := InitDB()
+	conn, _ := storage.InitRedis()
+	db, err := storage.InitDB()
 	if err != nil {
 		return nil, err
 	}
-	return &BotRepo{Bot: b, RedCon: conn, db: db}, nil
+	repo := BotRepo{
+		Bot:       b,
+		redClient: conn,
+		db:        db,
+	}
+	return &repo, nil
 }
 
-func (repo *BotRepo) Message(msg *tgbotapi.Message) error {
-	tokens := strings.Fields(msg.Text)
-	if len(tokens) < 2 {
-		return nil
-	}
-	cmd, ok := cmds[tokens[0]]
-	if !ok {
-		return fmt.Errorf("no valid command")
-	}
-	data, err := cmd(repo, tokens[1:])
+func (r *BotRepo) Definition(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
+	term := msg.Text
+	data, err := r.FetchData(term)
 	if err != nil {
-		return fmt.Errorf("server error")
+		return nil, err
 	}
 	if len(data) == 0 {
 		newMsg := tgbotapi.NewMessage(msg.Chat.ID, "No definition found")
 		newMsg.ReplyToMessageID = msg.MessageID
-		repo.Bot.Send(newMsg)
-		return nil
+		return newMsg, nil
 	}
 	dataToSend := GetPage(data, 0)
 	newMsg := tgbotapi.NewMessage(
 		msg.Chat.ID,
 		"•  "+strings.Join(dataToSend, "\n•  "),
 	)
-	if isDataLeft(data, 0) {
-		newMsg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Next", "1"),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Add", "add"),
-			),
-		)
-	} else {
-		newMsg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Add", "add"),
-			),
-		)
-	}
+	newMsg.ReplyMarkup = CreateMarkup(0, isDataLeft(data, 0), true)
 	newMsg.ReplyToMessageID = msg.MessageID
-	repo.Bot.Send(newMsg)
-	return fmt.Errorf("no valid command")
+	return newMsg, nil
 }
 
-func (repo *BotRepo) CallBackQuery(cb *tgbotapi.CallbackQuery) error {
-	msg := cb.Message
-	tokens := strings.Fields(cb.Message.ReplyToMessage.Text)
-	if len(tokens) < 2 {
-		return nil
-	}
+func (r *BotRepo) CallBack(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
 	if cb.Data == "add" {
-		term := strings.Join(tokens[1:], " ")
-		sqlQuery := `
-			SELECT user_id, word 
-			FROM vocabulary WHERE user_id = $1 AND word = $2
-		`
-		_, err := repo.db.Query(sqlQuery, cb.From.ID, term)
-		if err != nil {
-			log.Println("\n\nALREADY IN DB\n")
-			return err
-		}
-		_, err = repo.db.Exec(`
-			INSERT INTO vocabulary (user_id, word) 
-			VALUES ($1, $2)
-		`, cb.From.ID, term)
-		if err == nil {
-			newMsg := tgbotapi.NewEditMessageText(
-				msg.Chat.ID,
-				msg.MessageID,
-				term+" added",
-			)
-			log.Println("\n\nINSERTED SUCCESSFULY DB\n")
-			repo.Bot.Send(newMsg)
-			return nil
-		}
-		return err
+		return r.Save(cb)
 	}
+
+	msg := cb.Message
+	term := msg.ReplyToMessage.Text
 	num, err := strconv.Atoi(cb.Data)
 	if err != nil {
-		return fmt.Errorf("uknown callbackquery data")
+		return nil, fmt.Errorf("Uknown callbackquery data")
 	}
-	cmd, ok := cmds[tokens[0]]
-	if !ok {
-		return fmt.Errorf("no valid command")
-	}
-	data, err := cmd(repo, tokens[1:])
+	data, err := r.FetchData(term)
 	if err != nil {
-		return fmt.Errorf("server error")
+		return nil, err
 	}
 
 	dataToSend := GetPage(data, num)
@@ -167,38 +84,104 @@ func (repo *BotRepo) CallBackQuery(cb *tgbotapi.CallbackQuery) error {
 		msg.MessageID,
 		"•  "+strings.Join(dataToSend, "\n•  "),
 	)
-	if num == 0 {
-		markup := tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Next", strconv.Itoa(num+1)),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Add", "add"),
-			),
-		)
-		newMsg.ReplyMarkup = &markup
-	} else if isDataLeft(data, num) {
-		markup := tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Prev", strconv.Itoa(num-1)),
-				tgbotapi.NewInlineKeyboardButtonData("Next", strconv.Itoa(num+1)),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Add", "add"),
-			),
-		)
-		newMsg.ReplyMarkup = &markup
-	} else {
-		markup := tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Prev", strconv.Itoa(num-1)),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Add", "add"),
-			),
-		)
-		newMsg.ReplyMarkup = &markup
+	newMsg.ReplyMarkup = CreateMarkup(num, isDataLeft(data, num), true)
+	return newMsg, nil
+}
+
+func (r *BotRepo) Save(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
+	msg := cb.Message
+	term := cb.Message.ReplyToMessage.Text
+	sqlQuery := `
+			SELECT user_id, word 
+			FROM vocabulary WHERE user_id = $1 AND word = $2
+		`
+	_, err := r.db.Query(sqlQuery, cb.From.ID, term)
+	if err != nil {
+		log.Println("\n\nALREADY IN DB\n")
+		return nil, err
 	}
-	repo.Bot.Send(newMsg)
-	return nil
+	_, err = r.db.Exec(`
+			INSERT INTO vocabulary (user_id, word) 
+			VALUES ($1, $2)
+		`, cb.From.ID, term)
+	if err != nil {
+		return nil, err
+	}
+	newMsg := tgbotapi.NewEditMessageText(
+		msg.Chat.ID,
+		msg.MessageID,
+		fmt.Sprintf("*%s* added\n/vocab - show your vocabulary", term),
+	)
+	newMsg.ParseMode = "markdown"
+	log.Println("\n\nINSERTED SUCCESSFULY DB\n")
+	return newMsg, nil
+}
+
+func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
+	if msg.Command() == "vocab" {
+		rows, err := r.db.Query(
+			"SELECT user_id, word FROM vocabulary WHERE user_id = $1",
+			msg.From.ID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
+		vocab := make([]string, 0)
+		for rows.Next() {
+			var s string
+			err := rows.Scan(&s)
+			if err != nil {
+				return nil, err
+			}
+			vocab = append(vocab, s)
+		}
+		newMsg := tgbotapi.NewMessage(
+			msg.Chat.ID,
+			"•  "+strings.Join(vocab, "\n•  "),
+		)
+		return newMsg, nil
+	}
+	return nil, fmt.Errorf("Uknown command")
+}
+
+func CreateMarkup(curPage int, next, add bool) *tgbotapi.InlineKeyboardMarkup {
+	var keyboard [][]tgbotapi.InlineKeyboardButton
+	if curPage == 0 {
+		if next {
+			keyboard = append(
+				keyboard,
+				tgbotapi.NewInlineKeyboardRow(
+					tgbotapi.NewInlineKeyboardButtonData("Next", strconv.Itoa(curPage+1)),
+				),
+			)
+		}
+	} else if next {
+		keyboard = append(
+			keyboard,
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("Prev", strconv.Itoa(curPage-1)),
+				tgbotapi.NewInlineKeyboardButtonData("Next", strconv.Itoa(curPage+1)),
+			),
+		)
+	} else {
+		keyboard = append(
+			keyboard,
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("Prev", strconv.Itoa(curPage-1)),
+			),
+		)
+	}
+	if add == true {
+		keyboard = append(
+			keyboard,
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("Add", strconv.Itoa(curPage+1)),
+			),
+		)
+	}
+	return &tgbotapi.InlineKeyboardMarkup{
+		InlineKeyboard: keyboard,
+	}
 }

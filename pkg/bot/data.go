@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 )
 
@@ -28,32 +27,24 @@ type Data struct {
 	Definitions []*DefinitionData `json:"list"`
 }
 
-var (
-	cmds = map[string]func(*BotRepo, []string) ([]string, error){
-		"/def": func(repo *BotRepo, args []string) ([]string, error) {
-			return repo.FetchData(strings.Join(args, " "))
-		},
-	}
-)
-
 func isDataLeft(data []string, offset int) bool {
 	return len(data) > offset*PAGELEN+PAGELEN
 }
 
 func (repo *BotRepo) FetchData(term string) ([]string, error) {
-	if repo.RedCon != nil {
-		log.Println("\n\nTRYING TO READ FROM RED\n")
-		statusCmd := repo.RedCon.Get(term)
+	if repo.redClient != nil {
+		statusCmd := repo.redClient.Get(term)
 		if statusCmd.Err() == nil {
 			ans := []string{}
 			err := json.Unmarshal([]byte(statusCmd.Val()), &ans)
 			if err != nil {
-				log.Println("\n\nERROR: ", err)
+				log.Println("\nERROR: ", err)
 				return nil, err
 			}
-			log.Printf("\nREDIS FOUND\n%#v\n\n", ans)
+			log.Printf("\nFOUND IN REDIS%#v\n", ans)
 			return ans, nil
 		}
+		log.Println("\nNO REDIS ENTRY")
 	}
 
 	u := apiURL
@@ -82,10 +73,10 @@ func (repo *BotRepo) FetchData(term string) ([]string, error) {
 		ans[i] = data.Definitions[i].Definition
 	}
 
-	if repo.RedCon != nil {
+	if repo.redClient != nil {
 		b, err := json.Marshal(ans)
 		if err == nil {
-			statusCmd := repo.RedCon.Set(term, string(b), time.Hour*24)
+			statusCmd := repo.redClient.Set(term, string(b), time.Hour*24)
 			if statusCmd.Err() != nil {
 				log.Printf("\nREDIS WRITTEN ERROR\n%s\n\n", statusCmd.Err().Error())
 			} else {

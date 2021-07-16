@@ -22,6 +22,6 @@ func main() {
 		BotRepo: botRepo,
 	}
 	r := gin.Default()
-	r.POST("/", handler.GetMessage)
+	r.POST("/", handler.ProcessMessage)
 	r.Run()
 }
