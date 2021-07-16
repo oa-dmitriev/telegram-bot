@@ -98,6 +98,7 @@ func (r *BotRepo) CallBackVocab(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable,
 		cb.Message.MessageID,
 		txt,
 	)
+	newMsg.ParseMode = "markdown"
 	newMsg.ReplyMarkup = CreateMarkup(num, isDefLeft(num, data), false)
 	return newMsg, nil
 }
