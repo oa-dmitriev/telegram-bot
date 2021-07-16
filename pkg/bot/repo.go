@@ -144,13 +144,37 @@ func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 			}
 			vocab = append(vocab, s)
 		}
+		// newMsg := tgbotapi.NewMessage(
+		// 	msg.Chat.ID,
+		// 	"•  "+strings.Join(vocab, "\n•  "),
+		// )
 		newMsg := tgbotapi.NewMessage(
 			msg.Chat.ID,
-			"•  "+strings.Join(vocab, "\n•  "),
+			"",
 		)
+		newMsg.ReplyMarkup = CustomMarkup(vocab)
 		return newMsg, nil
 	}
-	return nil, fmt.Errorf("Uknown command")
+	newMsg := tgbotapi.NewMessage(
+		msg.Chat.ID,
+		msg.Command(),
+	)
+	return newMsg, nil
+}
+
+func CustomMarkup(s []string) *tgbotapi.InlineKeyboardMarkup {
+	var keyboard [][]tgbotapi.InlineKeyboardButton
+	for i := range s {
+		keyboard = append(
+			keyboard,
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData(s[i], "/"+s[i]),
+			),
+		)
+	}
+	return &tgbotapi.InlineKeyboardMarkup{
+		InlineKeyboard: keyboard,
+	}
 }
 
 func CreateMarkup(curPage int, next, add bool) *tgbotapi.InlineKeyboardMarkup {
