@@ -31,8 +31,10 @@ type Data struct {
 // 	return len(data) > offset*PAGELEN+PAGELEN
 // }
 
-func isDataLeft(offset int, data ...interface{}) bool {
-	log.Println("\n\nISDATALEFTLEN: ", len(data))
+func isDataLeft(offset int, data []string) bool {
+	return len(data) > offset*PAGELEN+PAGELEN
+}
+func isDefLeft(offset int, data []*DefinitionData) bool {
 	return len(data) > offset*PAGELEN+PAGELEN
 }
 

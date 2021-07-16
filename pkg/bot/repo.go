@@ -93,7 +93,7 @@ func (r *BotRepo) CallBackVocab(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable,
 		cb.Message.MessageID,
 		txt,
 	)
-	newMsg.ReplyMarkup = CreateMarkup(num, isDataLeft(num, data), false)
+	newMsg.ReplyMarkup = CreateMarkup(num, isDefLeft(num, data), false)
 	return newMsg, nil
 }
 
@@ -176,7 +176,7 @@ func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 			msg.MessageID,
 			txt,
 		)
-		newMsg.ReplyMarkup = CreateMarkup(0, isDataLeft(0, data), false)
+		newMsg.ReplyMarkup = CreateMarkup(0, isDefLeft(0, data), false)
 		return newMsg, nil
 	}
 	return nil, fmt.Errorf("Uknown command")
