@@ -195,6 +195,8 @@ func CreateMarkup(curPage int, next, add bool) *tgbotapi.InlineKeyboardMarkup {
 					tgbotapi.NewInlineKeyboardButtonData("Next", strconv.Itoa(curPage+1)),
 				),
 			)
+		} else {
+			return nil
 		}
 	} else if next {
 		keyboard = append(
