@@ -41,16 +41,6 @@ func NewBotRepo(token string, webHookUrl string) (*BotRepo, error) {
 	return &repo, nil
 }
 
-func (r *BotRepo) CallBack(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
-	if cb.Data == "add" {
-		return r.Save(cb)
-	}
-	if cb.Message.ReplyToMessage.Text == "/vocab" {
-		return r.CallBackVocab(cb)
-	}
-	return r.CallBackDef(cb)
-}
-
 func (r *BotRepo) Definition(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 	term := msg.Text
 	data, err := r.FetchData(term)
@@ -70,6 +60,16 @@ func (r *BotRepo) Definition(msg *tgbotapi.Message) (tgbotapi.Chattable, error) 
 	newMsg.ReplyMarkup = CreateMarkup(0, isDataLeft(0, data), true)
 	newMsg.ReplyToMessageID = msg.MessageID
 	return newMsg, nil
+}
+
+func (r *BotRepo) CallBack(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
+	if cb.Data == "add" {
+		return r.Save(cb)
+	}
+	if cb.Message.ReplyToMessage.Text == "/vocab" {
+		return r.CallBackVocab(cb)
+	}
+	return r.CallBackDef(cb)
 }
 
 func (r *BotRepo) CallBackVocab(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
@@ -160,35 +160,25 @@ func (r *BotRepo) Save(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
 
 func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 	if msg.Command() == "vocab" {
-		rows, err := r.db.Query(
-			"SELECT word FROM vocabulary WHERE user_id = $1",
-			msg.From.ID,
-		)
+		data, err := r.GetDataFromDB(msg.From.ID)
 		if err != nil {
 			return nil, err
 		}
-		defer rows.Close()
 
-		vocab := make([]string, 0)
-		for rows.Next() {
-			var s string
-			err := rows.Scan(&s)
-			if err != nil {
-				return nil, err
-			}
-			vocab = append(vocab, s)
+		dataToSend := GetPageFromDB(data, 0)
+		txt := fmt.Sprintf("*%s* - %s", dataToSend[0].Word, dataToSend[0].Definition)
+		for i := range dataToSend {
+			txt += fmt.Sprintf("\n*%s* - %s", dataToSend[i].Word, dataToSend[i].Definition)
 		}
-		newMsg := tgbotapi.NewMessage(
+		newMsg := tgbotapi.NewEditMessageText(
 			msg.Chat.ID,
-			"Your vocabulary",
+			msg.MessageID,
+			txt,
 		)
-		newMsg.ParseMode = "markdown"
-
-		newMsg.ReplyMarkup = CreateMarkup(0, isDataLeft(0, vocab), false)
-		newMsg.ReplyToMessageID = msg.MessageID
+		newMsg.ReplyMarkup = CreateMarkup(0, isDataLeft(0, data), false)
 		return newMsg, nil
 	}
-	return nil, fmt.Errorf("Uknown error")
+	return nil, fmt.Errorf("Uknown command")
 }
 
 func CreateMarkup(curPage int, next, add bool) *tgbotapi.InlineKeyboardMarkup {
