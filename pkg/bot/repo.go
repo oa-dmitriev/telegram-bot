@@ -161,20 +161,21 @@ func (r *BotRepo) Save(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
 }
 
 func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
-	log.Println("\n\n\nCOMMMAAAAND: ", msg.Command())
 	if msg.Command() == "vocab" {
 		data, err := r.GetDataFromDB(msg.From.ID)
 		if err != nil {
-			log.Println("\n\n\nERRORORR COMMAND: ", err)
 			return nil, err
 		}
 
 		dataToSend := GetPageFromDB(data, 0)
 		txt := fmt.Sprintf("*%s* - %s", dataToSend[0].Word, dataToSend[0].Definition)
-		for i := range dataToSend {
-			txt += fmt.Sprintf("\n*%s* - %s", dataToSend[i].Word, dataToSend[i].Definition)
+		for i := 1; i < len(dataToSend); i++ {
+			txt += fmt.Sprintf(
+				"\n*%s* - %s",
+				dataToSend[i].Word,
+				dataToSend[i].Definition,
+			)
 		}
-		log.Println("\n\n\nTEXT: ", txt)
 		newMsg := tgbotapi.NewMessage(
 			msg.Chat.ID,
 			txt,
@@ -183,6 +184,7 @@ func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 			newMsg.ReplyMarkup = CreateMarkup(0, more, false)
 		}
 		newMsg.ReplyToMessageID = msg.MessageID
+		newMsg.ParseMode = "markdown"
 		return newMsg, nil
 	}
 	return nil, fmt.Errorf("Uknown command")
