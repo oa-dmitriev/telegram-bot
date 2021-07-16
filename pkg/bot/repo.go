@@ -177,7 +177,7 @@ func CreateMarkup(curPage int, next, add bool) *tgbotapi.InlineKeyboardMarkup {
 		keyboard = append(
 			keyboard,
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Add", strconv.Itoa(curPage+1)),
+				tgbotapi.NewInlineKeyboardButtonData("Add", "add"),
 			),
 		)
 	}
