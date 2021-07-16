@@ -160,6 +160,7 @@ func (r *BotRepo) Save(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
 }
 
 func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
+	log.Println("\n\n\nCOMMMAAAAND: ", msg.Command())
 	if msg.Command() == "vocab" {
 		data, err := r.GetDataFromDB(msg.From.ID)
 		if err != nil {
