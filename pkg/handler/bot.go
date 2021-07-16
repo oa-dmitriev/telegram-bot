@@ -37,5 +37,7 @@ func (h *BotHandler) ProcessMessage(c *gin.Context) {
 		log.Println("\n\n\n\nERROR: ", err)
 		return
 	}
-	h.BotRepo.Bot.Send(chat)
+	if _, err := h.BotRepo.Bot.Send(chat); err != nil {
+		log.Println("\n\n\nEROR SENDing CHAT", err)
+	}
 }

@@ -179,7 +179,7 @@ func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 			txt,
 		)
 		newMsg.ReplyToMessageID = msg.MessageID
-		newMsg.ReplyMarkup = CreateMarkup(0, isDefLeft(0, data), false)
+		//newMsg.ReplyMarkup = CreateMarkup(0, isDefLeft(0, data), false)
 		return newMsg, nil
 	}
 	return nil, fmt.Errorf("Uknown command")
