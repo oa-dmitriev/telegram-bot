@@ -164,6 +164,7 @@ func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 	if msg.Command() == "vocab" {
 		data, err := r.GetDataFromDB(msg.From.ID)
 		if err != nil {
+			log.Println("\n\n\nERRORORR COMMAND: ", err)
 			return nil, err
 		}
 
