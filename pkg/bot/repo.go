@@ -86,8 +86,12 @@ func (r *BotRepo) CallBackVocab(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable,
 
 	dataToSend := GetPageFromDB(data, num)
 	txt := fmt.Sprintf("*%s* - %s", dataToSend[0].Word, dataToSend[0].Definition)
-	for i := range dataToSend {
-		txt += fmt.Sprintf("\n*%s* - %s", dataToSend[i].Word, dataToSend[i].Definition)
+	for i := 1; i < len(dataToSend); i++ {
+		txt += fmt.Sprintf(
+			"\n*%s* - %s",
+			dataToSend[i].Word,
+			dataToSend[i].Definition,
+		)
 	}
 	newMsg := tgbotapi.NewEditMessageText(
 		cb.Message.Chat.ID,
