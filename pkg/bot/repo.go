@@ -57,6 +57,7 @@ func (r *BotRepo) Definition(msg *tgbotapi.Message) (tgbotapi.Chattable, error) 
 		msg.Chat.ID,
 		"•  "+strings.Join(dataToSend, "\n•  "),
 	)
+	log.Println("\n\n\nLENDATA: ", len(data))
 	newMsg.ReplyMarkup = CreateMarkup(0, isDataLeft(0, data), true)
 	newMsg.ReplyToMessageID = msg.MessageID
 	return newMsg, nil
