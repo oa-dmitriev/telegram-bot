@@ -150,8 +150,9 @@ func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 		// )
 		newMsg := tgbotapi.NewMessage(
 			msg.Chat.ID,
-			"",
+			"*vocab*",
 		)
+		newMsg.ParseMode = "markdown"
 		newMsg.ReplyMarkup = CustomMarkup(vocab)
 		return newMsg, nil
 	}
