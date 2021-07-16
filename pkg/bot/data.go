@@ -27,7 +27,11 @@ type Data struct {
 	Definitions []*DefinitionData `json:"list"`
 }
 
-func isDataLeft(data []string, offset int) bool {
+// func isDataLeft(data []string, offset int) bool {
+// 	return len(data) > offset*PAGELEN+PAGELEN
+// }
+
+func isDataLeft(offset int, data ...interface{}) bool {
 	return len(data) > offset*PAGELEN+PAGELEN
 }
 
@@ -85,6 +89,39 @@ func (repo *BotRepo) FetchData(term string) ([]string, error) {
 		}
 	}
 	return ans, nil
+}
+
+func (r *BotRepo) GetDataFromDB(userId int) ([]*DefinitionData, error) {
+	sqlQuery := `
+		SELECT word, definition 
+		FROM vocabulary 
+		WHERE user_id = $1
+	`
+	data := make([]*DefinitionData, 0)
+	rows, err := r.db.Query(sqlQuery, userId)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		def := DefinitionData{}
+		if err := rows.Scan(&def.Word, &def.Definition); err != nil {
+			return nil, err
+		}
+		data = append(data, &def)
+	}
+	return data, nil
+}
+
+func GetPageFromDB(data []*DefinitionData, offset int) []*DefinitionData {
+	start := offset * PAGELEN
+	if start > len(data) {
+		return nil
+	}
+	end := offset*PAGELEN + PAGELEN
+	if len(data) < end {
+		end = len(data)
+	}
+	return data[start:end]
 }
 
 func GetPage(data []string, offset int) []string {
