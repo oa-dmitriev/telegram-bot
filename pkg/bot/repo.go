@@ -57,8 +57,9 @@ func (r *BotRepo) Definition(msg *tgbotapi.Message) (tgbotapi.Chattable, error) 
 		msg.Chat.ID,
 		"•  "+strings.Join(dataToSend, "\n•  "),
 	)
-	log.Println("\n\n\nLENDATA: ", len(data))
-	newMsg.ReplyMarkup = CreateMarkup(0, isDataLeft(0, data), true)
+	if more := isDataLeft(0, data); more {
+		newMsg.ReplyMarkup = CreateMarkup(0, more, true)
+	}
 	newMsg.ReplyToMessageID = msg.MessageID
 	return newMsg, nil
 }
@@ -178,8 +179,10 @@ func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 			msg.Chat.ID,
 			txt,
 		)
+		if more := isDefLeft(0, data); more {
+			newMsg.ReplyMarkup = CreateMarkup(0, more, false)
+		}
 		newMsg.ReplyToMessageID = msg.MessageID
-		newMsg.ReplyMarkup = CreateMarkup(0, isDefLeft(0, data), false)
 		return newMsg, nil
 	}
 	return nil, fmt.Errorf("Uknown command")
