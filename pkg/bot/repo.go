@@ -98,8 +98,14 @@ func (r *BotRepo) Save(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
 	row := r.db.QueryRow(sqlQuery, cb.From.ID, term)
 	var s string
 	if err := row.Scan(&s); err == nil {
+		newMsg := tgbotapi.NewEditMessageText(
+			msg.Chat.ID,
+			msg.MessageID,
+			fmt.Sprintf("*%s* is already in your vocabulary\n/vocab - show your vocabulary", term),
+		)
+		newMsg.ParseMode = "markdown"
 		log.Println("\n\nALREADY IN DB\n")
-		return nil, err
+		return newMsg, nil
 	}
 	_, err := r.db.Exec(`
 			INSERT INTO vocabulary (user_id, word) 
