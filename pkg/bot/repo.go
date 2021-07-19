@@ -173,6 +173,15 @@ func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 		}
 
 		dataToSend := GetPageFromDB(data, 0)
+		if len(dataToSend) == 0 {
+			newMsg := tgbotapi.NewMessage(
+				msg.Chat.ID,
+				"Your vocabulary is empty",
+			)
+			newMsg.ReplyToMessageID = msg.MessageID
+			newMsg.ParseMode = "markdown"
+			return newMsg, nil
+		}
 		txt := fmt.Sprintf("*%s* - %s", dataToSend[0].Word, dataToSend[0].Definition)
 		for i := 1; i < len(dataToSend); i++ {
 			txt += fmt.Sprintf(
