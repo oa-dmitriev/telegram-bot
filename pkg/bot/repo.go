@@ -192,6 +192,21 @@ func (r *BotRepo) Command(msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 		newMsg.ParseMode = "markdown"
 		return newMsg, nil
 	}
+	if msg.Command() == "delAll" {
+		sqlQuery := "DELETE FROM vocabulary WHERE user_id = $1"
+		_, err := r.db.Exec(sqlQuery, msg.From.ID)
+		if err != nil {
+			return nil, err
+		}
+		txt := "Your vocabulary has been deleted :("
+		newMsg := tgbotapi.NewMessage(
+			msg.Chat.ID,
+			txt,
+		)
+		newMsg.ReplyToMessageID = msg.MessageID
+		newMsg.ParseMode = "markdown"
+		return newMsg, nil
+	}
 	return nil, fmt.Errorf("Uknown command")
 }
 
