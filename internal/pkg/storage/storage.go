@@ -40,5 +40,17 @@ func InitDB() (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS users(
+			user_id bigint PRIMARY KEY,
+			username text,
+			first_name text,
+			last_name text,
+			UNIQUE(user_id)
+		)
+	`)
+	if err != nil {
+		return nil, err
+	}
 	return db, nil
 }

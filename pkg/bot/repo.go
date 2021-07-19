@@ -155,6 +155,10 @@ func (r *BotRepo) Save(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
 	if err != nil {
 		return nil, err
 	}
+	_, err = r.db.Exec(`
+			INSERT INTO users (user_id, username, first_name, last_name) 
+			VALUES ($1, $2, $3, $4)
+		`, cb.From.ID, cb.From.UserName, cb.From.FirstName, cb.From.LastName)
 	newMsg := tgbotapi.NewEditMessageText(
 		msg.Chat.ID,
 		msg.MessageID,
