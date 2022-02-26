@@ -50,6 +50,8 @@ jobs:
           DATABASE_URI: ${{ secrets.DATABASE_URI }}
         run: echo "$DATABASE_URI"
 
+      - run: echo ${{ secrets.DATABASE_URI }}
+
       - name: Add migrations
         env:
           DATABASE_URI: ${{ secrets.DATABASE_URI }}
