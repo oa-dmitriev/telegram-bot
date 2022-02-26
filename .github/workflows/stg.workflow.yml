@@ -49,4 +49,4 @@ jobs:
       - name: Add migrations
         env:
           DATABASE_URI: ${{ secrets.DATABASE_URI }}
-        run: goose -dir ./migrations postgres "$DATABASE_URI" down
+        run: goose -dir ./migrations postgres postgres://utlamwnpybagjv:f8b0947e68e64428af1a76d00bc0d60ddc7f95fcef37dbb2612796b8e9391a52@ec2-54-78-36-245.eu-west-1.compute.amazonaws.com:5432/danediesourpi1 status
