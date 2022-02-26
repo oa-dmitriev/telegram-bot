@@ -52,5 +52,17 @@ jobs:
 
       - name: Add migrations
         env:
-          DATABASE_URI: ${{ secrets.DATABASE_URI }}
-        run: goose -dir ./migrations postgres $DATABASE_URI up
+          DATABASE_URI: ${{ secrets.DATABASE_URL }}
+        run: goose -dir ./migrations postgres $DATABASE_URL up
+
+  deploy:
+    needs: migrate
+    environment: peric-telegram-bot
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: peric-telegram-bot
+          heroku_email: dmitrievoleg96@gmail.com
