@@ -34,7 +34,10 @@ jobs:
         run: go test -v ./...
 
   migrate:
-    needs: test
+    needs:
+      - "test"
+      - "build"
+    environment: peric-telegram-bot
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -50,4 +53,4 @@ jobs:
       - name: Add migrations
         env:
           DATABASE_URI: ${{ secrets.DATABASE_URI }}
-        run: goose -dir ./migrations postgres "$DATABASE_URI" up
+        run: goose -dir ./migrations postgres $DATABASE_URI up
