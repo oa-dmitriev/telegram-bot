@@ -31,10 +31,10 @@ jobs:
         run: go test -v ./...
 
   migrate:
-    needs: test
+    needs:
+      - "test"
+      - "build"
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URI: ${{ secrets.DATABASE_URI }}
     steps:
       - uses: actions/checkout@v2
 
@@ -46,7 +46,7 @@ jobs:
       - name: Install Goose
         run: go install github.com/pressly/goose/v3/cmd/goose@latest
 
-      - run: echo $DATABASE_URI
-
       - name: Add migrations
-        run: goose -dir ./migrations postgres $DATABASE_URI status
+        env:
+          DATABASE_URI: ${{ secrets.DATABASE_URI }}
+        run: goose -dir ./migrations postgres "$DATABASE_URI" down
