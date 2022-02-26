@@ -1,12 +1,12 @@
 # Peric Bot 
 
-It's a telegram bot designed to help users to learn English in a funny way
+It's a telegram bot designed to help users to learn English having a good laugh 
 
 You can find the bot on telegram using its username: @PericBot
 
 ## Description
 
-As simple as it soudns you feed the bot a word or a phrase and it will give you multiple definitions and examples using that word
+As simple as it sounds you feed the bot a word or a phrase and it will give you multiple definitions and examples using that word
 
 
 ### Unnecessary details

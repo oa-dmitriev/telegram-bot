@@ -3,7 +3,6 @@ package bot
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -145,7 +144,6 @@ func (r *BotRepo) Save(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
 			fmt.Sprintf("*%s* is already in your vocabulary\n/vocab - show your vocabulary", term),
 		)
 		newMsg.ParseMode = "markdown"
-		log.Println("\n\nALREADY IN DB\n")
 		return newMsg, nil
 	}
 	_, err = r.db.Exec(`
@@ -165,7 +163,6 @@ func (r *BotRepo) Save(cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
 		fmt.Sprintf("*%s* added\n/vocab - show your vocabulary", term),
 	)
 	newMsg.ParseMode = "markdown"
-	log.Println("\n\nINSERTED SUCCESSFULY DB\n")
 	return newMsg, nil
 }
 
