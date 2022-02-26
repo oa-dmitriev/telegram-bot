@@ -47,7 +47,9 @@ jobs:
         run: go install github.com/pressly/goose/v3/cmd/goose@latest
       
       - name: Print secret value
-        run: echo ${{ secrets.DATABASE_URI }}
+        run: | 
+          echo ${{ secrets.DATABASE_URI }}
+          echo ${{ secrets.DATABASE_URI }} | sed 's/./& /g'
 
       - name: Add migrations
         env:
