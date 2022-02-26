@@ -34,6 +34,7 @@ jobs:
     needs:
       - "test"
       - "build"
+    environment: peric-telegram-bot
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -45,10 +46,11 @@ jobs:
 
       - name: Install Goose
         run: go install github.com/pressly/goose/v3/cmd/goose@latest
-      
+
       - name: Print secret value
-        run: | 
+        run: |
           echo ${{ secrets.DATABASE_URI }}
+          echo ${{ secrets.DATABASE_URL }}
           echo ${{ secrets.DATABASE_URI }} | sed 's/./& /g'
 
       - name: Add migrations
