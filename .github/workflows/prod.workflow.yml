@@ -23,7 +23,6 @@ jobs:
         run: go build -v ./...
 
   test:
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -55,7 +54,7 @@ jobs:
 
       - name: Add migrations
         env:
-          DATABASE_URI: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: goose -dir ./migrations postgres $DATABASE_URL up
 
   deploy:
@@ -69,3 +68,6 @@ jobs:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
           heroku_app_name: peric-telegram-bot
           heroku_email: dmitrievoleg96@gmail.com
+        env:
+          PERIC_BOT_TOKEN: $${{ secrets.PERIC_BOT_TOKEN }}
+          WEB_HOOK_URL: $${{ secrets.PERIC_WEB_HOOK_URL }}
