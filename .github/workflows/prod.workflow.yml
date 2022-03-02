@@ -70,4 +70,4 @@ jobs:
           heroku_email: dmitrievoleg96@gmail.com
         env:
           PERIC_BOT_TOKEN: $${{ secrets.PERIC_BOT_TOKEN }}
-          WEB_HOOK_URL: $${{ secrets.PERIC_WEB_HOOK_URL }}
+          PERIC_WEB_HOOK_URL: $${{ secrets.PERIC_WEB_HOOK_URL }}
