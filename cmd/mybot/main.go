@@ -20,6 +20,8 @@ func main() {
 	cfg, err := config.GetEnv(ctx)
 	exitOnError(ctx, "could not read config: %s", err)
 
+	log.Println("config: ", cfg)
+
 	db, err := database.NewDBWrapper(ctx, database.Options{
 		DatabaseURL: cfg.DatabaseURL,
 	})
