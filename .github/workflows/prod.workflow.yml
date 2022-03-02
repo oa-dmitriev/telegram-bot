@@ -69,5 +69,5 @@ jobs:
           heroku_app_name: peric-telegram-bot
           heroku_email: dmitrievoleg96@gmail.com
         env:
-          HD_PERIC_BOT_TOKEN: $${{ secrets.PERIC_BOT_TOKEN }}
-          HD_PERIC_WEB_HOOK_URL: $${{ secrets.PERIC_WEB_HOOK_URL }}
+          HD_PERIC_BOT_TOKEN: ${{ secrets.PERIC_BOT_TOKEN }}
+          HD_PERIC_WEB_HOOK_URL: ${{ secrets.PERIC_WEB_HOOK_URL }}
