@@ -28,6 +28,7 @@ func Ready(db *sql.DB) error {
 	for i := 0; i < entryPointWaitingSeconds; i++ {
 		log.Printf("trying to ping database, attempt %d", i)
 		if errPing = db.Ping(); errPing == nil {
+			log.Printf("connected to database")
 			return nil
 		}
 		time.Sleep(time.Second)
