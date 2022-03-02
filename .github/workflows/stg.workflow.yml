@@ -49,5 +49,5 @@ jobs:
 
       - name: Add migrations
         env:
-          DATABASE_URI: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: goose -dir ./migrations postgres $DATABASE_URL status
