@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS vocabulary (
     word text,
     definition text,
     UNIQUE(user_id, word),
-    CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id),
+    CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
 CREATE INDEX IF NOT EXISTS vocabulary_word_idx ON vocabulary(word);
