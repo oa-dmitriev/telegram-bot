@@ -11,8 +11,7 @@ import (
 
 func (i *Implementation) Command(ctx context.Context, msg *tgbotapi.Message) (tgbotapi.Chattable, error) {
 	if msg.Command() == "vocab" {
-		var offset int64
-		data, err := i.vocabRepo.GetList(ctx, int64(msg.From.ID), pageLen, offset)
+		data, err := i.vocabRepo.GetList(ctx, int64(msg.From.ID), pageLen, 0)
 		if err != nil {
 			return nil, err
 		}
@@ -28,15 +27,7 @@ func (i *Implementation) Command(ctx context.Context, msg *tgbotapi.Message) (tg
 
 		domainData := domain.ConvertDBVocabToDomainData(data)
 
-		resText := fmt.Sprintf("*%s* - %s", domainData[0].Word, domainData[0].Definition)
-		for i := 1; i < len(domainData); i++ {
-			resText += fmt.Sprintf(
-				"\n\n*%s* - %s",
-				domainData[i].Word,
-				domainData[i].Definition,
-			)
-		}
-		sendMsg.Text = resText
+		sendMsg.Text = domain.ToString(domainData)
 
 		mark := markup.New()
 		if len(domainData) == pageLen {

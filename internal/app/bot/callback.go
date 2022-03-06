@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/oa-dmitriev/telegram-bot/internal/domain"
 	"github.com/oa-dmitriev/telegram-bot/internal/markup"
 	"github.com/oa-dmitriev/telegram-bot/internal/repository"
 )
@@ -42,9 +43,16 @@ func (i *Implementation) Callback(ctx context.Context, cb *tgbotapi.CallbackQuer
 			return nil, err
 		}
 		mark := markup.New().WithPrev(pageNum)
+		if len(DBVocab) == 0 {
+			sendMsg.Text = "no more words in your vocab"
+			sendMsg.ReplyMarkup = mark.InlineKeyboardMarkup
+			return sendMsg, nil
+		}
 		if len(DBVocab) == pageLen {
 			mark = mark.WithNext(pageNum)
 		}
+		domainData := domain.ConvertDBVocabToDomainData(DBVocab)
+		sendMsg.Text = domain.ToString(domainData)
 		sendMsg.ReplyMarkup = mark.InlineKeyboardMarkup
 		return sendMsg, nil
 	}
