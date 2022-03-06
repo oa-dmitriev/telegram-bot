@@ -36,7 +36,7 @@ func (i *Implementation) Definition(ctx context.Context, msg *tgbotapi.Message, 
 
 	mark := markup.New().WithPrev(pageNum)
 	if len(data) > len(dataToSend) {
-		mark = mark.WithNext(0)
+		mark = mark.WithNext(pageNum)
 	}
 	mark = mark.WithCustomMsg("Add")
 

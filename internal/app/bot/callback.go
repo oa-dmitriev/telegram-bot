@@ -52,6 +52,8 @@ func (i *Implementation) Callback(ctx context.Context, cb *tgbotapi.CallbackQuer
 		return nil, err
 	}
 	if edditMsg, ok := msg.(tgbotapi.MessageConfig); ok {
+		log.Printf("edditMsg: %#v\n", edditMsg)
+		log.Println("edditMsg.ReplyMarkup: ", edditMsg.ReplyMarkup)
 		if inlineMarkup, success := (edditMsg.ReplyMarkup).(*tgbotapi.InlineKeyboardMarkup); success {
 			sendMsg.ReplyMarkup = inlineMarkup
 			return sendMsg, nil
