@@ -47,6 +47,7 @@ func (i *Implementation) Callback(ctx context.Context, cb *tgbotapi.CallbackQuer
 		return sendMsg, nil
 	}
 
+	cb.Message.Text = word
 	msg, err := i.Definition(ctx, cb.Message, pageNum)
 	if err != nil {
 		return nil, err
