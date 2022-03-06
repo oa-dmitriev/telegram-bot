@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"sort"
@@ -41,6 +42,8 @@ func (i *Implementation) Definition(ctx context.Context, msg *tgbotapi.Message, 
 	mark = mark.WithCustomMsg("Add")
 
 	sendMsg.ReplyMarkup = mark.InlineKeyboardMarkup
+	log.Println("Definition success: ", sendMsg, pageNum)
+	log.Println("sendMsg.ReplyMarkup: ", sendMsg.ReplyMarkup)
 	return sendMsg, nil
 }
 
