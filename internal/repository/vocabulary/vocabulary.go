@@ -23,7 +23,7 @@ func (r *Repo) GetList(ctx context.Context, userID, offset, limit int64) ([]*rep
 
 	for rows.Next() {
 		dbVocab := repository.DBVocabulary{}
-		if err := rows.Scan(&dbVocab.Word, &dbVocab.Definition); err != nil {
+		if err := rows.Scan(&dbVocab.UserID, &dbVocab.Word, &dbVocab.Definition); err != nil {
 			log.Println("could not scan the row for vocabulary table, error: ", err)
 			return nil, err
 		}

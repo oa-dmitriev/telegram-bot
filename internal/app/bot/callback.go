@@ -20,7 +20,6 @@ func (i *Implementation) Callback(ctx context.Context, cb *tgbotapi.CallbackQuer
 
 	if cb.Data == "add" {
 		if err := i.save(ctx, int64(userID), word); err != nil {
-			sendMsg.Text = err.Error()
 			return nil, fmt.Errorf("failed to save the word [%s] for the user [%d]", word, userID)
 		}
 		sendMsg.Text = fmt.Sprintf("*%s* added\n/vocab - show your vocabulary", word)
