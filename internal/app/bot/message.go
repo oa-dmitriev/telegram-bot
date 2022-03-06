@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"sort"
@@ -28,7 +27,7 @@ func (i *Implementation) Definition(ctx context.Context, msg *tgbotapi.Message, 
 	sendMsg.ReplyToMessageID = msg.MessageID
 
 	if len(data) == 0 {
-		sendMsg.Text = "No definition found"
+		sendMsg.Text = "no definition found"
 		return sendMsg, nil
 	}
 
@@ -36,14 +35,12 @@ func (i *Implementation) Definition(ctx context.Context, msg *tgbotapi.Message, 
 	sendMsg.Text = "•  " + strings.Join(dataToSend, "\n•  ")
 
 	mark := markup.New().WithPrev(pageNum)
-	if len(data) > len(dataToSend) {
+	if len(data)-pageLen*pageNum-len(dataToSend) > 0 {
 		mark = mark.WithNext(pageNum)
 	}
 	mark = mark.WithCustomMsg("Add")
 
 	sendMsg.ReplyMarkup = mark.InlineKeyboardMarkup
-	log.Println("Definition success: ", sendMsg, pageNum)
-	log.Println("sendMsg.ReplyMarkup: ", sendMsg.ReplyMarkup)
 	return sendMsg, nil
 }
 

@@ -11,6 +11,8 @@ import (
 	"github.com/oa-dmitriev/telegram-bot/internal/repository"
 )
 
+const errMsg = "something went wrong"
+
 func (i *Implementation) Callback(ctx context.Context, cb *tgbotapi.CallbackQuery) (tgbotapi.Chattable, error) {
 	chatID, msgID, userID := cb.Message.Chat.ID, cb.Message.MessageID, cb.From.ID
 	word := cb.Message.ReplyToMessage.Text
@@ -53,13 +55,13 @@ func (i *Implementation) Callback(ctx context.Context, cb *tgbotapi.CallbackQuer
 		return nil, err
 	}
 	if edditMsg, ok := msg.(tgbotapi.MessageConfig); ok {
-		log.Printf("edditMsg: %#v\n", edditMsg)
-		log.Println("edditMsg.ReplyMarkup: ", edditMsg.ReplyMarkup)
+		sendMsg.Text = edditMsg.Text
 		if inlineMarkup, success := (edditMsg.ReplyMarkup).(*tgbotapi.InlineKeyboardMarkup); success {
 			sendMsg.ReplyMarkup = inlineMarkup
 			return sendMsg, nil
 		}
 		log.Println("failed casting to InlineKeyboardMarkup")
+		sendMsg.Text = errMsg
 		return sendMsg, nil
 	}
 
