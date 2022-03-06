@@ -11,6 +11,8 @@ import (
 	entitytype "github.com/oa-dmitriev/telegram-bot/internal/entity-type"
 )
 
+const ()
+
 func (i *Implementation) Resolve(c *gin.Context) {
 	u := tgbotapi.Update{}
 	err := c.BindJSON(&u)
@@ -34,10 +36,9 @@ func (i *Implementation) Resolve(c *gin.Context) {
 	default:
 		err = fmt.Errorf("unkown payload")
 	}
+
 	if err != nil {
 		log.Println(err)
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
 	}
 
 	if err := i.Send(ctx, chat); err != nil {
@@ -46,8 +47,9 @@ func (i *Implementation) Resolve(c *gin.Context) {
 }
 
 func (i *Implementation) Send(ctx context.Context, chat tgbotapi.Chattable) error {
-	if _, err := i.bot.Send(chat); err != nil {
-		return err
+	if chat == nil {
+		return fmt.Errorf("empty response")
 	}
-	return nil
+	_, err := i.bot.Send(chat)
+	return err
 }
