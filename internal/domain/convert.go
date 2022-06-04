@@ -29,3 +29,18 @@ func ToString(domainData []*DefinitionData) string {
 	}
 	return sb.String()
 }
+
+func ConvertJokes(jokes []*repository.DBJoke) []*JokeInfo {
+	res := make([]*JokeInfo, 0, len(jokes))
+	for _, joke := range jokes {
+		res = append(res, &JokeInfo{
+			Category: joke.Category,
+			Type:     joke.Type,
+			Joke:     joke.Joke,
+			Setup:    joke.Setup,
+			Delivery: joke.Delivery,
+			ID:       joke.ID,
+		})
+	}
+	return res
+}
