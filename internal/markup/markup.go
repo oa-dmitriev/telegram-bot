@@ -28,6 +28,11 @@ func (m *Markup) WithPrev(curPage int) *Markup {
 }
 
 func (m *Markup) WithNext(curPage int) *Markup {
+	if len(m.InlineKeyboard) != 0 {
+		m.InlineKeyboard[0] = append(m.InlineKeyboard[0],
+			tgbotapi.NewInlineKeyboardButtonData("Next", strconv.Itoa(curPage+1)))
+		return m
+	}
 	m.InlineKeyboard = append(m.InlineKeyboard, tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Next", strconv.Itoa(curPage+1)),
 	))

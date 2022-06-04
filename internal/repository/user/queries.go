@@ -13,8 +13,8 @@ WHERE id = $1::BIGINT;
 `
 )
 
-func sqlArgs(user *repository.DBUser) []interface{} {
-	return []interface{}{
+func sqlArgs(user *repository.DBUser) []any {
+	return []any{
 		user.ID,
 		user.Username,
 		user.FirstName,
