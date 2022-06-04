@@ -21,9 +21,9 @@ func (r *Repo) Add(ctx context.Context, user *repository.DBUser) error {
 }
 
 func (r *Repo) GetUser(ctx context.Context, userID int64) (*repository.DBUser, error) {
-	rows := r.QueryRowContext(ctx, querySQLGetUser, userID)
+	row := r.QueryRowContext(ctx, querySQLGetUser, userID)
 	user := repository.DBUser{}
-	if err := rows.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName, &user.ChatID); err != nil {
+	if err := row.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName, &user.ChatID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrUserNotFound
 		}
@@ -31,4 +31,14 @@ func (r *Repo) GetUser(ctx context.Context, userID int64) (*repository.DBUser, e
 		return nil, err
 	}
 	return &user, nil
+}
+
+func sqlArgs(user *repository.DBUser) []any {
+	return []any{
+		user.ID,
+		user.Username,
+		user.FirstName,
+		user.LastName,
+		user.ChatID,
+	}
 }
