@@ -27,8 +27,8 @@ OFFSET $3::INT;
 `
 )
 
-func sqlArgs(vocab *repository.DBVocabulary) []interface{} {
-	return []interface{}{
+func sqlArgs(vocab *repository.DBVocabulary) []any {
+	return []any{
 		vocab.UserID,
 		vocab.Word,
 		vocab.Definition,
