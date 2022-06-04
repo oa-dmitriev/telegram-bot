@@ -27,7 +27,7 @@ func (r *Repo) GetUser(ctx context.Context, userID int64) (*repository.DBUser, e
 	}
 
 	user := repository.DBUser{}
-	if err := rows.Scan(&user); err != nil {
+	if err := rows.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName, &user.ChatID); err != nil {
 		log.Println("could not exec querySQLGetUser query, error: ", err)
 		return nil, err
 	}
