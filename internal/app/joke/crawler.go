@@ -47,7 +47,7 @@ func (i *Implementation) StartCrawling(ctx context.Context) error {
 				Delivery: joke.Delivery,
 				Category: joke.Category,
 			}); err != nil {
-				return err
+				log.Printf("jokeRepo err: %s\n", err.Error())
 			}
 		}
 		time.Sleep(time.Duration(60 / i.rateLimit))
