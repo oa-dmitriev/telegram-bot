@@ -13,3 +13,8 @@ type VocabularyRepo interface {
 	DeleteWord(ctx context.Context, userID int64, word string) error
 	Delete(ctx context.Context, userID int64) error
 }
+
+type JokeRepo interface {
+	GetList(ctx context.Context, limit, offset int64) ([]*DBJoke, error)
+	Add(ctx context.Context, joke *DBJoke) error
+}

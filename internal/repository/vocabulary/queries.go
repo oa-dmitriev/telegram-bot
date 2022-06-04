@@ -1,7 +1,5 @@
 package vocabulary
 
-import "github.com/oa-dmitriev/telegram-bot/internal/repository"
-
 const (
 	querySQLInsertVocabulary = `
 INSERT INTO vocabulary(user_id, word, definition)
@@ -26,11 +24,3 @@ LIMIT $2::INT
 OFFSET $3::INT;	
 `
 )
-
-func sqlArgs(vocab *repository.DBVocabulary) []any {
-	return []any{
-		vocab.UserID,
-		vocab.Word,
-		vocab.Definition,
-	}
-}

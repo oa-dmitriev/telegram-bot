@@ -7,14 +7,12 @@ import (
 	"github.com/oa-dmitriev/telegram-bot/internal/repository"
 )
 
-const (
-	defaultCapacity = 100
-)
+const defaultCapacity = 100
 
-func (r *Repo) GetList(ctx context.Context, userID, offset, limit int64) ([]*repository.DBVocabulary, error) {
+func (r *Repo) GetList(ctx context.Context, userID, limit, offset int64) ([]*repository.DBVocabulary, error) {
 	res := make([]*repository.DBVocabulary, 0, defaultCapacity)
 
-	rows, err := r.QueryContext(ctx, querySQLSelectAllVocabulary, userID, offset, limit)
+	rows, err := r.QueryContext(ctx, querySQLSelectAllVocabulary, userID, limit, offset)
 	if err != nil {
 		log.Println("could not exec select query for vocabulary table, error: ", err)
 		return nil, err
@@ -58,4 +56,12 @@ func (r *Repo) Delete(ctx context.Context, userID int64) error {
 	}
 	log.Printf("deleted vocabulary for the user with id [%d]", userID)
 	return nil
+}
+
+func sqlArgs(vocab *repository.DBVocabulary) []any {
+	return []any{
+		vocab.UserID,
+		vocab.Word,
+		vocab.Definition,
+	}
 }
