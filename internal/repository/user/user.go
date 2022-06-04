@@ -22,12 +22,11 @@ func (r *Repo) Add(ctx context.Context, user *repository.DBUser) error {
 
 func (r *Repo) GetUser(ctx context.Context, userID int64) (*repository.DBUser, error) {
 	rows := r.QueryRowContext(ctx, querySQLGetUser, userID)
-	if errors.Is(rows.Err(), sql.ErrNoRows) {
-		return nil, ErrUserNotFound
-	}
-
 	user := repository.DBUser{}
 	if err := rows.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName, &user.ChatID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
 		log.Println("could not exec querySQLGetUser query, error: ", err)
 		return nil, err
 	}
