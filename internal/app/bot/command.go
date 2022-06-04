@@ -32,8 +32,8 @@ func (i *Implementation) Command(ctx context.Context, msg *tgbotapi.Message) (tg
 		mark := markup.New()
 		if len(domainData) == pageLen {
 			mark = mark.WithNext(0)
+			sendMsg.ReplyMarkup = mark.InlineKeyboardMarkup
 		}
-		sendMsg.ReplyMarkup = mark.InlineKeyboardMarkup
 
 		return sendMsg, nil
 	}
