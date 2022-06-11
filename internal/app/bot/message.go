@@ -14,7 +14,10 @@ import (
 	"github.com/oa-dmitriev/telegram-bot/internal/markup"
 )
 
-const pageLen = 3
+const (
+	jokePageLen = 1
+	pageLen     = 3
+)
 
 func (i *Implementation) Definition(ctx context.Context, msg *tgbotapi.Message, pageNum int) (tgbotapi.Chattable, error) {
 	term := msg.Text

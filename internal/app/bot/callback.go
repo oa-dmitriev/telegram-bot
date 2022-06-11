@@ -57,6 +57,27 @@ func (i *Implementation) Callback(ctx context.Context, cb *tgbotapi.CallbackQuer
 		return sendMsg, nil
 	}
 
+	if cb.Message.ReplyToMessage.Text == "/joke" {
+		offset := int64(pageNum) * pageLen
+		DBJokes, err := i.jokeRepo.GetList(ctx, jokePageLen, offset)
+		if err != nil {
+			return nil, err
+		}
+
+		mark := markup.New().WithPrev(pageNum)
+		if len(DBJokes) == 0 {
+			sendMsg.Text = "no more jokes, go to work"
+			sendMsg.ReplyMarkup = mark.InlineKeyboardMarkup
+			return sendMsg, nil
+		}
+		if len(DBJokes) == pageLen {
+			mark = mark.WithNext(pageNum)
+		}
+		sendMsg.Text = domain.JokesToString(domain.ConvertJokes(DBJokes))
+		sendMsg.ReplyMarkup = mark.InlineKeyboardMarkup
+		return sendMsg, nil
+	}
+
 	cb.Message.Text = word
 	msg, err := i.Definition(ctx, cb.Message, pageNum)
 	if err != nil {

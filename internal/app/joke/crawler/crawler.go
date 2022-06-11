@@ -1,4 +1,4 @@
-package joke
+package crawler
 
 import (
 	"context"
@@ -13,9 +13,12 @@ import (
 	"github.com/oa-dmitriev/telegram-bot/internal/repository"
 )
 
+const defaultTries = 1000
+
 func (i *Implementation) Run(ctx context.Context) error {
 	errCount := 0
 	for {
+		log.Println("starting crawling...")
 		if err := i.StartCrawling(ctx); err != nil {
 			errCount++
 			log.Printf("error while crawling, tried %d times: %s\n", errCount, err.Error())
@@ -26,13 +29,14 @@ func (i *Implementation) Run(ctx context.Context) error {
 		if errCount > 10 {
 			break
 		}
+		log.Println("finished crawling...")
 		time.Sleep(i.schedule)
 	}
 	return errors.New("failed crawling 10 times in a row")
 }
 
 func (i *Implementation) StartCrawling(ctx context.Context) error {
-	for j := 0; j < 1000; j++ {
+	for j := 0; j < defaultTries; j++ {
 		jokes, err := i.getResp(ctx)
 		if err != nil {
 			return err
