@@ -31,7 +31,7 @@ func (r *Repo) GetList(ctx context.Context, limit, offset int64) ([]*repository.
 	for rows.Next() {
 		dbJoke := repository.DBJoke{}
 
-		if err := rows.Scan(&dbJoke.ID, &dbJoke.Type, &dbJoke.Setup,
+		if err := rows.Scan(&dbJoke.ID, &dbJoke.Type, &dbJoke.Joke, &dbJoke.Setup,
 			&dbJoke.Delivery, &dbJoke.Category, &dbJoke.Created_at,
 		); err != nil {
 			log.Println("could not scan the row in selectJokesQuery, error: ", err)
