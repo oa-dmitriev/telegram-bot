@@ -48,5 +48,33 @@ func (i *Implementation) Command(ctx context.Context, msg *tgbotapi.Message) (tg
 		sendMsg.ParseMode = "markdown"
 		return sendMsg, nil
 	}
+
+	if msg.Command() == "joke" {
+		jokes, err := i.jokeRepo.GetList(ctx, jokePageLen, 0)
+		if err != nil {
+			return nil, err
+		}
+
+		sendMsg := tgbotapi.NewMessage(msg.Chat.ID, "")
+		sendMsg.ReplyToMessageID = msg.MessageID
+		sendMsg.ParseMode = "markdown"
+
+		if len(jokes) == 0 {
+			sendMsg.Text = "I ain't playing jokes mate, come later"
+			return sendMsg, nil
+		}
+
+		domainJokes := domain.ConvertJokes(jokes)
+		sendMsg.Text = domain.JokesToString(domainJokes)
+
+		mark := markup.New()
+		if len(domainJokes) == jokePageLen {
+			mark = mark.WithNext(0)
+			sendMsg.ReplyMarkup = mark.InlineKeyboardMarkup
+		}
+
+		return sendMsg, nil
+
+	}
 	return nil, fmt.Errorf("uknown command")
 }

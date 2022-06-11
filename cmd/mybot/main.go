@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/oa-dmitriev/telegram-bot/internal/app"
 	botservice "github.com/oa-dmitriev/telegram-bot/internal/app/bot"
-	crawler "github.com/oa-dmitriev/telegram-bot/internal/app/joke"
+	crawler "github.com/oa-dmitriev/telegram-bot/internal/app/joke/crawler"
 	"github.com/oa-dmitriev/telegram-bot/internal/pkg/config"
 	"github.com/oa-dmitriev/telegram-bot/internal/pkg/database"
 	"github.com/oa-dmitriev/telegram-bot/internal/repository/joke"
@@ -44,10 +45,11 @@ func main() {
 		jokeRepo,
 		cfg.JokeAPI,
 		cfg.JokeAPIRateLimit,
+		24*time.Hour,
 	)
 	exitOnError(ctx, "could not create jokeCrawlerService: %s", err)
 
-	botService, err := botservice.NewBotService(userRepo, vocabRepo, bot, cfg.UrbanDictURL)
+	botService, err := botservice.NewBotService(userRepo, vocabRepo, jokeRepo, bot, cfg.UrbanDictURL)
 	exitOnError(ctx, "could not create botService: %s", err)
 
 	err = a.Run(ctx, jokeCrawlerService, botService)

@@ -44,3 +44,22 @@ func ConvertJokes(jokes []*repository.DBJoke) []*JokeInfo {
 	}
 	return res
 }
+
+func JokesToString(jokes []*JokeInfo) string {
+	var sb strings.Builder
+
+	for _, joke := range jokes {
+		fmt.Fprintln(&sb, jokeToSring(joke))
+	}
+	return sb.String()
+}
+
+func jokeToSring(joke *JokeInfo) string {
+	if joke.Type == "single" {
+		return joke.Joke
+	}
+	if joke.Type == "twopart" {
+		return fmt.Sprintf("%s\n%s", joke.Setup, joke.Delivery)
+	}
+	return "Колобок повесился"
+}

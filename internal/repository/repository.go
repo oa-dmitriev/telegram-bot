@@ -5,6 +5,7 @@ import "context"
 type UserRepo interface {
 	Add(ctx context.Context, user *DBUser) error
 	GetUser(ctx context.Context, userID int64) (*DBUser, error)
+	GetAllUsers(ctx context.Context) ([]*DBUser, error)
 }
 
 type VocabularyRepo interface {

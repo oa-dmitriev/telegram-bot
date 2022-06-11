@@ -12,6 +12,7 @@ import (
 type Implementation struct {
 	userRepo     repository.UserRepo
 	vocabRepo    repository.VocabularyRepo
+	jokeRepo     repository.JokeRepo
 	bot          *tgbotapi.BotAPI
 	urbanDictURL *url.URL
 	server       *gin.Engine
@@ -20,6 +21,7 @@ type Implementation struct {
 func NewBotService(
 	userRepo repository.UserRepo,
 	vocabRepo repository.VocabularyRepo,
+	jokeRepo repository.JokeRepo,
 	bot *tgbotapi.BotAPI,
 	urbanDictURL string,
 ) (*Implementation, error) {
@@ -30,6 +32,7 @@ func NewBotService(
 	service := &Implementation{
 		userRepo:     userRepo,
 		vocabRepo:    vocabRepo,
+		jokeRepo:     jokeRepo,
 		bot:          bot,
 		urbanDictURL: parsedURL,
 		server:       gin.Default(),

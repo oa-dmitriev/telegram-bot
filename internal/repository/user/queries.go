@@ -14,4 +14,8 @@ SELECT id, username, first_name, last_name, chat_id
 FROM users 
 WHERE id = $1::BIGINT;
 `
+	querySQLGetAllUsers = `
+SELECT id, username, first_name, last_name, chat_id
+FROM users;
+`
 )

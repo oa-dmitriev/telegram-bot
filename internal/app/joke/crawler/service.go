@@ -1,4 +1,4 @@
-package joke
+package crawler
 
 import (
 	"net/http"
@@ -20,6 +20,7 @@ func NewJokeCrawlerService(
 	jokeRepo repository.JokeRepo,
 	jokeURL string,
 	rateLimit int,
+	schedule time.Duration,
 ) (*Implementation, error) {
 	parsedURL, err := url.Parse(jokeURL)
 	if err != nil {
@@ -31,6 +32,6 @@ func NewJokeCrawlerService(
 		jokeURL:   parsedURL,
 		client:    &http.Client{},
 		rateLimit: rateLimit,
-		schedule:  5 * time.Hour,
+		schedule:  schedule,
 	}, nil
 }
